@@ -1,5 +1,5 @@
 <launch>
     <!-- Start Service Server that moves the robot -->
-    <node pkg="robot_spell_server" type="robot_spell_server" name="robot_spell_server_node"  output="screen">
+    <node pkg="robot_spell_server" type="robot_spell_server.py" name="robot_spell_server_node"  output="screen">
     </node>
 </launch>
