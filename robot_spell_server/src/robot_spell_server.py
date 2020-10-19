@@ -30,9 +30,10 @@ from std_msgs.msg import Empty
 #variables to handle twist
 tMsg = Twist()
 tMsgList = []
+currOdom = Odometry()
 
 #create publisher
-cmdPub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+cmdPub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 
 
 #variables to hold the position and orientatioin of the robot read from /odom
@@ -44,6 +45,8 @@ odom_cur = [pos_x, pos_y, ang_z]
 
 def subCallback(data):
     global odom_cur
+    global currOdom
+    currOdom = data
     odom_cur[0] = data.pose.pose.position.x
     odom_cur[1] = data.pose.pose.position.y
     quat_x = data.pose.pose.orientation.x
@@ -74,14 +77,26 @@ def turnRobot(degreeRequest):
     #degrees from 180 to -180 with 
     #   x+ = 0
     #   y+ = 90
+    global tMsg
     global odom_cur
+    global currOdom
     radR = degreeRequest*(np.pi/180) #convert to rad
     radC = odom_cur[2]
     if (debugOnTurn):
         print("radR = " + str(radR) + "radC = " + str(radC))
-    if (radR!=radC) #FIXME
-   
-    return
+
+    while ((radR-radC)>(np.pi/90)): 
+        tMsg.angular.z = speed
+        print("radR = " + str(radR) + "radC = " + str(radC))
+        cmdPub.publish(tMsg)
+        subCallback(currOdom)
+    while ((radR-radC)<(np.pi/90)): 
+        tMsg.angular.z = -speed
+        print("radR = " + str(radR) + "radC = " + str(radC))
+        cmdPub.publish(tMsg)
+        subCallback(currOdom)
+    #cmdPub.publish(tMsg)
+    return 
 
 def moveUpRight(distance):
     #turn right
@@ -90,12 +105,13 @@ def moveUpRight(distance):
     global tMsg
 
     stopRobot()
-    turnRobot(90)
-    #t.sleep(5)
+    turnRobot(45)
+    #stopRobot()
+    t.sleep(5)
     start_location = [odom_cur[0],odom_cur[1]]
 
-    tMsg.linear.x = speed
-    cmdPub.publish(tMsg)
+    #tMsg.linear.x = speed
+    #cmdPub.publish(tMsg)
     #while 
 
 def letterPrint(letter):
@@ -129,6 +145,5 @@ spell_service = rospy.Service('/spell_service', CustomServiceMessage, serviceCal
 
 #create subscriber
 poseSub = rospy.Subscriber('/odom', Odometry, subCallback)
-
 rospy.spin() #keeps service open
 

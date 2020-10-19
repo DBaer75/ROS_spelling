@@ -104,7 +104,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES robot_spell_server
-CATKIN_DEPENDS rospy custom_service_message_pkg
+CATKIN_DEPENDS rospy #custom_service_message_pkg
 #  DEPENDS system_lib
 )
 
